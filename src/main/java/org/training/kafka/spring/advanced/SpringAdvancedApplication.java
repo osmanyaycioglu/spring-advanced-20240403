@@ -3,6 +3,7 @@ package org.training.kafka.spring.advanced;
 import a.b.c.MyOtherConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
@@ -20,6 +21,7 @@ import java.util.concurrent.ThreadFactory;
 @Import(MyOtherConfig.class)
 @EnableAsync
 @EnableAspectJAutoProxy
+@ServletComponentScan("org.training.kafka.spring.advanced.servlet")
 public class SpringAdvancedApplication {
 
     @Bean
