@@ -1,12 +1,18 @@
 package org.training.kafka.spring.advanced.aop;
 
+import lombok.Getter;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
+
 @Aspect
 @Component
+@Getter
 public class MyAspect {
 
 
@@ -59,7 +65,7 @@ public class MyAspect {
     // @Around("execution(* a.b.c.MyAnotherPackageBean.*(String))")
     public Object afterMethod(ProceedingJoinPoint joinPointParam) {
         try {
-            Object[] argsLoc  = joinPointParam.getArgs();
+            Object[] argsLoc = joinPointParam.getArgs();
             System.out.println("Giren parametre : " + argsLoc[0]);
             Object[] argsLoc2 = new Object[1];
             argsLoc2[0] = "ayşe";
@@ -78,7 +84,7 @@ public class MyAspect {
     @Around("execution(* a.b.c.MyAnotherPackageBean.*(String))")
     public Object afterMethodDelta(ProceedingJoinPoint joinPointParam) {
         try {
-            long delta = System.nanoTime();
+            long   delta      = System.nanoTime();
             Object proceedLoc = joinPointParam.proceed();
             System.out.println("Delta : " + (System.nanoTime() - delta));
             return proceedLoc;
@@ -88,5 +94,35 @@ public class MyAspect {
 
     }
 
+    private Map<String, AtomicLong> deltaTimes = new ConcurrentHashMap<>();
+
+    @Around("@annotation(methodTimeParam)")
+    public Object afterMethodDelta(ProceedingJoinPoint joinPointParam,
+                                   MethodTime methodTimeParam) {
+        try {
+            String     tagLoc = methodTimeParam.tag();
+            AtomicLong lLoc   = deltaTimes.get(tagLoc);
+            if (lLoc == null) {
+                synchronized (this) {
+                    lLoc = deltaTimes.get(tagLoc);
+                    if (lLoc == null) {
+                        lLoc = new AtomicLong();
+                        deltaTimes.put(tagLoc,
+                                       lLoc);
+                    }
+                }
+            }
+            long   delta      = System.nanoTime();
+            Object proceedLoc = joinPointParam.proceed();
+            delta = System.nanoTime() - delta;
+            System.out.println(tagLoc + " Metod Delta : " + delta);
+            long tagDelta = lLoc.addAndGet(delta);
+            System.out.println(tagLoc + " Tag Delta : " + tagDelta);
+            return proceedLoc;
+        } catch (Throwable exp) {
+            return null;
+        }
+
+    }
 
 }

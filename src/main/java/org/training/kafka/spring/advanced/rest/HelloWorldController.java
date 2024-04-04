@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.annotation.RequestScope;
+import org.training.kafka.spring.advanced.aop.MethodTime;
+import org.training.kafka.spring.advanced.aop.MyAspect;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +27,9 @@ public class HelloWorldController {
     @Autowired(required = false)
     private IGreetings oGreetings;
 
+    @Autowired
+    private MyAspect myAspect;
+
     public HelloWorldController(@Qualifier("greetings") IGreetings greetings) {
         this.greetings = greetings;
     }
@@ -39,16 +43,20 @@ public class HelloWorldController {
     }
 
     @GetMapping("/hello1")
+    @MethodTime(tag = "hello1")
     public String hello(@RequestParam String name,
                         @RequestParam String surname) {
         List<String> test = new ArrayList<>();
         names.add(name);
         counter.incrementAndGet();
-        return greetings.greet(name,
-                               surname);
+        String greetLoc = greetings.greet(name,
+                                          surname);
+        System.out.println("ret : " +  greetLoc);
+        return greetLoc;
     }
 
     @GetMapping("/hello2")
+    @MethodTime(tag = "hello2")
     public String hello2(@RequestParam String name,
                          @RequestParam String surname) {
         if (oGreetings != null) {
@@ -59,6 +67,12 @@ public class HelloWorldController {
         }
         return greetings.greet(name,
                                surname);
+    }
+
+
+    @GetMapping("/deltas")
+    public Map<String, AtomicLong> getDeltas() {
+        return myAspect.getDeltaTimes();
     }
 
     //    @PostConstruct

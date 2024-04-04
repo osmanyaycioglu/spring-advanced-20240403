@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.training.kafka.spring.advanced.aop.MethodTime;
 import org.training.kafka.spring.advanced.models.Employee;
 
 @RestController
@@ -12,6 +13,7 @@ import org.training.kafka.spring.advanced.models.Employee;
 public class EmployeeController {
 
     @PostMapping("/add")
+    @MethodTime(tag = "employee.provision.add")
     public String add(@Valid @RequestBody Employee employeeParam){
         return "OK";
     }
