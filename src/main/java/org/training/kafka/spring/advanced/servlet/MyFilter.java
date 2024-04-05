@@ -7,7 +7,7 @@ import org.springframework.boot.actuate.autoconfigure.observation.ObservationPro
 
 import java.io.IOException;
 
-@WebFilter("/api/*")
+@WebFilter("/api/v1/hello/*")
 public class MyFilter implements Filter {
 
     @Override

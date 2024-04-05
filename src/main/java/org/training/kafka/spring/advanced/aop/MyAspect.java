@@ -4,8 +4,13 @@ import lombok.Getter;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.*;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -121,6 +126,32 @@ public class MyAspect {
             return proceedLoc;
         } catch (Throwable exp) {
             return null;
+        }
+
+    }
+
+    @Around("@annotation(checkSecurityParam)")
+    public Object securityCheck(ProceedingJoinPoint joinPointParam,
+                                   CheckSecurity checkSecurityParam) {
+        try {
+            Authentication authenticationLoc = SecurityContextHolder.getContext()
+                                                                    .getAuthentication();
+            if (authenticationLoc == null) {
+                throw new AccessDeniedException("Buraya giremezsin");
+            }
+
+            String         roleLoc            = "ROLE_" + checkSecurityParam.value();
+            Collection<? extends GrantedAuthority> authoritiesLoc = authenticationLoc.getAuthorities();
+
+            for (GrantedAuthority authorityLoc : authoritiesLoc) {
+                String authorityLoc1 = authorityLoc.getAuthority();
+                if (roleLoc.equals(authorityLoc1)) {
+                    return joinPointParam.proceed();
+                }
+            }
+            throw new AccessDeniedException("Buraya giremezsin");
+        } catch (Throwable exp) {
+            throw new AccessDeniedException(exp.getMessage());
         }
 
     }

@@ -5,7 +5,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.training.kafka.spring.advanced.aop.CheckSecurity;
 import org.training.kafka.spring.advanced.aop.MethodTime;
 import org.training.kafka.spring.advanced.aop.MyAspect;
 
@@ -42,6 +44,7 @@ public class HelloWorldController {
         return counter2;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/hello1")
     @MethodTime(tag = "hello1")
     public String hello(@RequestParam String name,
@@ -55,6 +58,7 @@ public class HelloWorldController {
         return greetLoc;
     }
 
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/hello2")
     @MethodTime(tag = "hello2")
     public String hello2(@RequestParam String name,
@@ -69,7 +73,7 @@ public class HelloWorldController {
                                surname);
     }
 
-
+    @CheckSecurity("ADMIN")
     @GetMapping("/deltas")
     public Map<String, AtomicLong> getDeltas() {
         return myAspect.getDeltaTimes();
@@ -80,15 +84,15 @@ public class HelloWorldController {
 //        System.out.println("xyz");
 //    }
 
-    @PostMapping("/donotdoit/{op}")
-    public ResponseEntity<?> dynamicRest(@PathVariable String op,
-                                         HttpServletRequest requestParam){
-        switch (op){
-            case "add":
-                requestParam.getInputStream();
-            case  "delete":
-
-        }
-    }
+//    @PostMapping("/donotdoit/{op}")
+//    public ResponseEntity<?> dynamicRest(@PathVariable String op,
+//                                         HttpServletRequest requestParam){
+//        switch (op){
+//            case "add":
+//                requestParam.getInputStream();
+//            case  "delete":
+//
+//        }
+//    }
 
 }
